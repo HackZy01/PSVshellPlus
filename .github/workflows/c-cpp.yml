@@ -1,0 +1,42 @@
+name: Build PSVShellPlus
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+  workflow_dispatch:
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+
+    - name: Set up environment
+      run: |
+        echo "VITASDK=/usr/local/vitasdk" >> $GITHUB_ENV
+        echo "/usr/local/vitasdk/bin" >> $GITHUB_PATH
+
+    - name: Install dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y cmake build-essential python3 git
+
+    - name: Install VitaSDK
+      run: |
+        git clone https://github.com/vitasdk/vdpm
+        cd vdpm
+        ./bootstrap-vitasdk.sh
+        ./install-all.sh
+
+    - name: Build
+      run: |
+        & "C:\Program Files (x86)\Microsoft Visual Studio\2017\BuildTools\MSBuild\15.0\Bin\MSBuild.exe" PSVshellPlus.sln /p:Configuration=Release /p:Platform=PSVita
+        
+ #   - name: Upload artifact
+ #     uses: actions/upload-artifact@v4
+ #     with:
+ #       name: shellbat-suprx
+ #       path: build/shellbat.suprx
